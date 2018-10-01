@@ -1,0 +1,83 @@
+<script src="simpleTest.js"></script>
+<script>
+
+
+function isPrototypeOf(prototypeObj, obj) {
+  if (obj === null) {
+    return false;
+  }
+
+  if (prototypeObj === null || prototypeObj === undefined) {
+    throw new TypeError('Cannot read property isPropertyOf of null');
+  }
+
+  if (typeof obj === 'function' || typeof obj === 'object' || typeof obj === 'array') {
+    if (Object.getPrototypeOf(obj) === prototypeObj) {
+      return true;
+    } else {
+      if (typeof Object.getPrototypeOf(obj) === 'object') {
+        return isPrototypeOf(prototypeObj, Object.getPrototypeOf(obj));
+      } else {
+        return false;
+      }
+    }
+  }
+
+  return false;
+}
+
+//Tests
+
+var feline = {
+  meow: function() {
+    console.log('meow!');
+  }
+};
+
+var cat = Object.create(feline);
+cat.ignore = function() {
+  console.log('ignore');
+};
+
+var myCat = Object.create(cat);
+var empty = Object.create(null);
+
+
+tests({
+  'It should return a boolean value.': function() {
+    eq(typeof isPrototypeOf(cat, myCat), 'boolean');
+  },
+  'It should return true if second argument exists in the prototype chain of the other first argument.': function() {
+    eq(isPrototypeOf(cat, myCat), true);
+  },
+  'It should work with any number of prototype links.': function() {
+    var myObject = {};
+    var firstLink = Object.create(myObject);
+    var secondLink = Object.create(firstLink);
+    var thirdLink = Object.create(secondLink);
+
+    eq(isPrototypeOf(myObject, thirdLink), true);
+  },
+  'It should return false if obj is a boolean, string, number, or symbol.': function() {
+    eq(isPrototypeOf(Number.prototype, 1), false);
+    eq(isPrototypeOf(String.prototype, ''), false);
+    eq(isPrototypeOf(Boolean.prototype, true), false);
+    eq(isPrototypeOf(Symbol.prototype, Symbol(1)), false);
+  },
+  'It should return false if second argument does not exist in the prototype chain of the first argument.': function() {
+    eq(isPrototypeOf(cat, empty), false);
+  },
+  'It should return false if second argument is undefined or null.': function() {
+    eq(isPrototypeOf(cat, undefined), false);
+    eq(isPrototypeOf(cat, null), false);
+  },
+  'It should throw a TypeError if prototypeObj is undefined or null.': function() {
+    try {
+      isPrototypeOf(null, myCat);
+    } catch(e) {
+      eq(e instanceof TypeError, true);
+    }
+  }
+});
+
+</script>
